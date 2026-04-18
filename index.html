@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的项目导航台</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --bg-deep: #0f0f1a;
+      --bg-mid: #1a1a2e;
+      --card-bg: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --radius: 16px;
+      --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background glow orbs */
+    .bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .bg-orbs::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+      top: -200px; left: -100px;
+      border-radius: 50%;
+      animation: floatOrb 12s ease-in-out infinite;
+    }
+    .bg-orbs::after {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(129,140,248,0.10) 0%, transparent 70%);
+      bottom: -150px; right: -100px;
+      border-radius: 50%;
+      animation: floatOrb 16s ease-in-out infinite reverse;
+    }
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(15,15,26,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .navbar-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 700;
+      background: linear-gradient(135deg, #f1f5f9, var(--primary-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .navbar-logo svg { flex-shrink: 0; color: var(--primary-light); }
+    .navbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      width: 240px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-box:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .search-box svg { color: var(--text-secondary); flex-shrink: 0; }
+    .search-box input {
+      background: none; border: none; outline: none;
+      color: var(--text-primary); font-size: 14px; font-family: inherit;
+      width: 100%;
+    }
+    .search-box input::placeholder { color: var(--text-secondary); }
+
+    .btn-primary {
+      display: flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff; border: none; border-radius: 10px;
+      padding: 9px 18px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 10px; cursor: pointer; color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+    .btn-icon:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+    .btn-icon.syncing svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Sync status badge */
+    .sync-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text-secondary);
+      padding: 5px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+    }
+    .sync-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .sync-dot.ok { background: var(--success); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+    .sync-dot.err { background: var(--danger); }
+    .sync-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Main */
+    main {
+      position: relative; z-index: 1;
+      padding: 96px 32px 48px;
+      max-width: 1280px; margin: 0 auto;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; align-items: center; gap: 24px;
+      margin-bottom: 32px;
+    }
+    .stat-item {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text-secondary); font-size: 14px;
+    }
+    .stat-count {
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary);
+    }
+    .stats-divider { width: 1px; height: 24px; background: var(--card-border); }
+
+    /* Card grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    /* Project card */
+    .project-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      position: relative; overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+    .project-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.3);
+      border-color: rgba(99,102,241,0.3);
+    }
+    .project-card:hover::before { opacity: 1; }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .card-title { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+    .card-actions { display: flex; gap: 6px; opacity: 0; transition: opacity var(--transition); }
+    .project-card:hover .card-actions { opacity: 1; }
+
+    .icon-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all var(--transition);
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+    .icon-btn.delete:hover { background: rgba(239,68,68,0.15); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+
+    .card-desc {
+      font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;
+      margin-bottom: 16px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .tag {
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .tag-python { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .tag-fastapi { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+    .tag-web { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+    .tag-cli { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
+    .tag-playwright { background: rgba(236,72,153,0.12); color: #f472b6; border: 1px solid rgba(236,72,153,0.2); }
+    .tag-default { background: rgba(255,255,255,0.07); color: var(--text-secondary); border: 1px solid var(--card-border); }
+
+    .card-meta { display: flex; flex-direction: column; gap: 8px; }
+    .meta-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12.5px;
+    }
+    .meta-label { color: var(--text-secondary); flex-shrink: 0; }
+    .meta-value {
+      color: #cbd5e1; font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex: 1;
+    }
+    .copy-btn {
+      flex-shrink: 0; color: var(--text-secondary); cursor: pointer;
+      transition: color var(--transition);
+      background: none; border: none; padding: 2px; display: flex;
+    }
+    .copy-btn:hover { color: var(--primary-light); }
+
+    .cmd-block {
+      background: rgba(0,0,0,0.3); border-radius: 8px;
+      padding: 8px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-top: 4px;
+    }
+    .cmd-text {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px; color: #a5f3fc;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+    }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 80px 32px; text-align: center;
+    }
+    .empty-icon {
+      width: 80px; height: 80px; border-radius: 24px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      color: var(--primary-light);
+    }
+    .empty-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .empty-desc { color: var(--text-secondary); font-size: 14px; }
+
+    /* Modal backdrop */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: #16162a;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+      transform: translateY(20px) scale(0.97);
+      transition: transform var(--transition);
+    }
+    .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 28px 0;
+    }
+    .modal-title { font-size: 19px; font-weight: 700; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      color: var(--text-secondary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+    }
+    .modal-close:hover { background: rgba(239,68,68,0.15); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+
+    .modal-body { padding: 20px 28px 28px; }
+
+    /* Detail modal */
+    .detail-section { margin-bottom: 20px; }
+    .detail-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .detail-value { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
+    .detail-code {
+      background: rgba(0,0,0,0.35); border-radius: 10px; padding: 12px 16px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #a5f3fc;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .detail-code span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .detail-path {
+      background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 14px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12.5px; color: #94a3b8;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; word-break: break-all;
+    }
+    .detail-path span { flex: 1; }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 0 28px 24px;
+    }
+
+    .btn-secondary {
+      padding: 9px 18px; border-radius: 10px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      color: var(--text-primary); font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: all var(--transition);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.10); }
+
+    /* Form modal */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); margin-bottom: 7px;
+    }
+    .form-label span { color: var(--danger); }
+    .form-input, .form-textarea {
+      width: 100%;
+      background: rgba(0,0,0,0.25); border: 1px solid var(--card-border);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--text-primary); font-size: 14px; font-family: inherit;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: #4b5563; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-hint { font-size: 12px; color: var(--text-secondary); margin-top: 5px; }
+
+    /* Token modal */
+    .token-modal { max-width: 500px; }
+    .token-info {
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 13px; color: var(--text-secondary);
+      line-height: 1.6; margin-bottom: 20px;
+    }
+    .token-info a { color: var(--primary-light); text-decoration: none; }
+    .token-info a:hover { text-decoration: underline; }
+    .token-status-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.2); border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .password-wrap { position: relative; }
+    .password-wrap .form-input { padding-right: 44px; }
+    .toggle-pw {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); padding: 2px;
+      transition: color var(--transition);
+    }
+    .toggle-pw:hover { color: var(--text-primary); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(16px);
+      z-index: 999;
+      background: #1e1e38; border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 12px 20px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all; }
+    .toast.success { border-color: rgba(34,197,94,0.35); }
+    .toast.success .toast-icon { color: var(--success); }
+    .toast.warning { border-color: rgba(245,158,11,0.35); }
+    .toast.warning .toast-icon { color: var(--warning); }
+    .toast.error { border-color: rgba(239,68,68,0.35); }
+    .toast.error .toast-icon { color: var(--danger); }
+
+    /* Confirm dialog */
+    .confirm-dialog { max-width: 380px; }
+    .confirm-desc { font-size: 14px; color: var(--text-secondary); margin: 12px 0 24px; line-height: 1.6; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-danger {
+      padding: 9px 18px; border-radius: 10px;
+      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35);
+      color: var(--danger); font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all var(--transition);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(15,15,26,0.85);
+      backdrop-filter: blur(4px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .loading-overlay.show { opacity: 1; pointer-events: all; }
+    .loading-spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(99,102,241,0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading-text { font-size: 14px; color: var(--text-secondary); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .navbar { padding: 0 16px; }
+      .search-box { width: 160px; }
+      main { padding: 84px 16px 40px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .sync-badge span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-orbs"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">正在从 GitHub 加载数据...</div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+    </svg>
+    我的项目导航台
+  </div>
+  <div class="navbar-right">
+    <!-- Sync status -->
+    <div class="sync-badge" id="syncBadge" title="GitHub 同步状态">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncText">未连接</span>
+    </div>
+    <!-- Refresh -->
+    <button class="btn-icon" id="refreshBtn" title="从 GitHub 刷新" onclick="pullFromGitHub()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+    </button>
+    <!-- GitHub settings -->
+    <button class="btn-icon" title="GitHub 配置" onclick="openTokenModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+    <div class="search-box">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="搜索项目..." />
+    </div>
+    <button class="btn-primary" onclick="openAddModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      新增项目
+    </button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main>
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-count" id="totalCount">0</span>
+      <span>个项目</span>
+    </div>
+    <div class="stats-divider"></div>
+    <div class="stat-item" id="filterInfo" style="display:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span id="filterText"></span>
+    </div>
+  </div>
+  <div class="card-grid" id="cardGrid"></div>
+</main>
+
+<!-- Detail Modal -->
+<div class="modal-backdrop" id="detailBackdrop">
+  <div class="modal" id="detailModal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailTitle"></div>
+      <button class="modal-close" onclick="closeModal('detailBackdrop')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('detailBackdrop')">关闭</button>
+      <button class="btn-primary" id="detailEditBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        编辑
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Form Modal -->
+<div class="modal-backdrop" id="formBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="formTitle">新增项目</div>
+      <button class="modal-close" onclick="closeModal('formBackdrop')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="formId" />
+      <div class="form-group">
+        <label class="form-label">项目名称 <span>*</span></label>
+        <input class="form-input" id="formName" placeholder="如：海康门禁卡管理系统" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">功能描述 <span>*</span></label>
+        <textarea class="form-textarea" id="formDesc" placeholder="简要描述项目的功能和用途..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">存放路径 <span>*</span></label>
+        <input class="form-input" id="formPath" placeholder="/Users/one/ONEprojectcode/xxx" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">技术标签</label>
+        <input class="form-input" id="formTags" placeholder="Python, FastAPI, Web（逗号分隔）" />
+        <div class="form-hint">多个标签用逗号分隔</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">安装命令</label>
+        <input class="form-input" id="formInstall" placeholder="pip install -r requirements.txt" style="font-family: monospace;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">运行命令 <span>*</span></label>
+        <input class="form-input" id="formRun" placeholder="python3 main.py" style="font-family: monospace;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注说明</label>
+        <textarea class="form-textarea" id="formNotes" placeholder="其他补充信息，如注意事项、访问地址等..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('formBackdrop')">取消</button>
+      <button class="btn-primary" onclick="saveProject()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        保存
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop" id="confirmBackdrop">
+  <div class="modal confirm-dialog">
+    <div class="modal-header">
+      <div class="modal-title">确认删除</div>
+      <button class="modal-close" onclick="closeModal('confirmBackdrop')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-desc" id="confirmDesc"></p>
+      <div class="confirm-actions">
+        <button class="btn-secondary" onclick="closeModal('confirmBackdrop')">取消</button>
+        <button class="btn-danger" id="confirmOkBtn">删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub Token Modal -->
+<div class="modal-backdrop" id="tokenBackdrop">
+  <div class="modal token-modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-3px;margin-right:8px">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub 数据同步配置
+      </div>
+      <button class="modal-close" onclick="closeModal('tokenBackdrop')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="token-info">
+        配置后，项目数据将保存在 GitHub 仓库的 <code style="color:var(--primary-light)">projects.json</code> 文件中，跨设备自动同步。<br><br>
+        Token 仅存储在本地浏览器，不会上传到任何服务器。<br>
+        需要 <a href="https://github.com/settings/tokens/new" target="_blank">Personal Access Token</a>，权限勾选 <code style="color:var(--primary-light)">repo</code>。
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">GitHub 用户名</label>
+        <input class="form-input" id="cfgOwner" placeholder="如：ljq117" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">仓库名</label>
+        <input class="form-input" id="cfgRepo" placeholder="如：GMcode" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">分支名</label>
+        <input class="form-input" id="cfgBranch" placeholder="main" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Personal Access Token</label>
+        <div class="password-wrap">
+          <input class="form-input" id="cfgToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+          <button class="toggle-pw" onclick="toggleTokenVis()" type="button" id="togglePwBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="eyeIcon">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('tokenBackdrop')">取消</button>
+      <button class="btn-primary" onclick="testAndSaveConfig()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        验证并保存
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg class="toast-icon" id="toastIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ─── Config (stored in localStorage) ─────────────────────────
+const CFG_KEY = 'gh_sync_config';
+const DATA_FILE = 'projects.json';
+
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; }
+}
+function setConfig(cfg) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+}
+
+// ─── GitHub API ───────────────────────────────────────────────
+async function ghGet(path) {
+  const cfg = getConfig();
+  const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}?ref=${cfg.branch || 'main'}`, {
+    headers: { Authorization: `token ${cfg.token}`, Accept: 'application/vnd.github.v3+json' }
+  });
+  if (!res.ok) throw new Error(`GitHub API ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
+async function ghPut(path, content, sha, message) {
+  const cfg = getConfig();
+  const body = {
+    message,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+    branch: cfg.branch || 'main',
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${cfg.token}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `GitHub API ${res.status}`);
+  }
+  return res.json();
+}
+
+// In-memory: { projects: [], sha: null }
+let store = { projects: [], sha: null };
+
+// ─── Pull from GitHub ─────────────────────────────────────────
+async function pullFromGitHub(silent = false) {
+  const cfg = getConfig();
+  if (!cfg.token || !cfg.owner || !cfg.repo) {
+    setSyncStatus('err', '未配置');
+    if (!silent) openTokenModal();
+    return;
+  }
+
+  setSyncStatus('loading', '同步中...');
+  setRefreshSpin(true);
+  if (!silent) showLoading('正在从 GitHub 加载数据...');
+
+  try {
+    const file = await ghGet(DATA_FILE);
+    const text = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    store.projects = JSON.parse(text);
+    store.sha = file.sha;
+    setSyncStatus('ok', '已同步');
+    renderCards();
+    if (!silent) hideLoading();
+    if (!silent) showToast('数据已从 GitHub 加载', 'success');
+  } catch (e) {
+    hideLoading();
+    if (e.message.includes('404')) {
+      // File not found → push preset data
+      store.projects = getPresetProjects();
+      store.sha = null;
+      await pushToGitHub('初始化项目数据', silent);
+    } else {
+      setSyncStatus('err', '同步失败');
+      if (!silent) showToast('加载失败：' + e.message, 'error');
+      // fallback to local cache
+      const cached = localStorage.getItem('projects_cache');
+      if (cached) store.projects = JSON.parse(cached);
+      renderCards();
+    }
+  }
+  setRefreshSpin(false);
+}
+
+// ─── Push to GitHub ───────────────────────────────────────────
+async function pushToGitHub(commitMsg = '更新项目数据', silent = false) {
+  const cfg = getConfig();
+  if (!cfg.token || !cfg.owner || !cfg.repo) return false;
+
+  setSyncStatus('loading', '保存中...');
+  try {
+    // Always get latest sha before writing to avoid conflicts
+    try {
+      const latest = await ghGet(DATA_FILE);
+      store.sha = latest.sha;
+    } catch (_) {}
+
+    const result = await ghPut(DATA_FILE, store.projects, store.sha, commitMsg);
+    store.sha = result.content.sha;
+    // Cache locally as backup
+    localStorage.setItem('projects_cache', JSON.stringify(store.projects));
+    setSyncStatus('ok', '已同步');
+    return true;
+  } catch (e) {
+    setSyncStatus('err', '保存失败');
+    if (!silent) showToast('保存到 GitHub 失败：' + e.message, 'error');
+    return false;
+  }
+}
+
+// ─── Preset data ──────────────────────────────────────────────
+function getPresetProjects() {
+  return [
+    {
+      id: 'preset-hk-cardmanager',
+      name: '海康门禁卡管理系统',
+      description: '批量为员工在多台海康威视门禁打卡机（DS-K1T680MW）上绑定/下发门禁卡。支持按姓名搜索员工，并发查询所有设备，弹窗确认后一键批量绑定卡号。',
+      path: '/Users/one/ONEprojectcode/HK/CardManager',
+      tags: ['Python', 'FastAPI', 'Web'],
+      installCommand: 'pip3 install fastapi uvicorn requests pydantic',
+      runCommand: 'python3 main.py',
+      notes: '启动后访问 http://localhost:8000\n需与打卡机在同一内网（10.11.71.81/82/83）\n如设备无法连接会在搜索结果中显示错误，不影响其他设备使用',
+      createdAt: '2026-04-18'
+    },
+    {
+      id: 'preset-itsmgs',
+      name: '工时自动填报工具',
+      description: '自动登录 tspms 项目管理系统（IAM SSO 方式），填报每周工时。自动检测目标周，填报周一至周五各 7.5 小时，支持 Token 缓存复用、补填历史周、预填未来周，自动跳过已填日期。',
+      path: '/Users/one/ONEprojectcode/itsmgs',
+      tags: ['Python', 'CLI'],
+      installCommand: 'pip install -r requirements.txt',
+      runCommand: 'python3 menu.py',
+      notes: '首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login',
+      createdAt: '2026-04-18'
+    }
+  ];
+}
+
+// ─── Sync status UI ───────────────────────────────────────────
+function setSyncStatus(state, text) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  dot.className = 'sync-dot ' + state;
+  txt.textContent = text;
+}
+function setRefreshSpin(on) {
+  document.getElementById('refreshBtn').classList.toggle('syncing', on);
+}
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ─── Tag Colors ───────────────────────────────────────────────
+const TAG_CLASS_MAP = {
+  'python': 'tag-python', 'fastapi': 'tag-fastapi',
+  'web': 'tag-web', 'cli': 'tag-cli', 'playwright': 'tag-playwright',
+};
+function getTagClass(tag) {
+  return TAG_CLASS_MAP[tag.toLowerCase()] || 'tag-default';
+}
+function renderTags(tags) {
+  return tags.map(t => `<span class="tag ${getTagClass(t)}">${t}</span>`).join('');
+}
+
+// ─── Render Cards ─────────────────────────────────────────────
+let currentSearch = '';
+
+function renderCards() {
+  const projects = store.projects;
+  const grid = document.getElementById('cardGrid');
+  const query = currentSearch.trim().toLowerCase();
+  const filtered = query
+    ? projects.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+      )
+    : projects;
+
+  document.getElementById('totalCount').textContent = projects.length;
+
+  const filterInfo = document.getElementById('filterInfo');
+  if (query) {
+    filterInfo.style.display = 'flex';
+    document.getElementById('filterText').textContent = `找到 ${filtered.length} 个结果`;
+  } else {
+    filterInfo.style.display = 'none';
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="empty-title">${query ? '没有匹配的项目' : '还没有项目'}</div>
+        <div class="empty-desc">${query ? '试试其他关键词' : '点击右上角「新增项目」开始添加吧'}</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="project-card" onclick="openDetail('${p.id}')">
+      <div class="card-header">
+        <div class="card-title">${escHtml(p.name)}</div>
+        <div class="card-actions" onclick="event.stopPropagation()">
+          <button class="icon-btn" title="编辑" onclick="openEditModal('${p.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn delete" title="删除" onclick="confirmDelete('${p.id}','${escHtml(p.name)}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-desc">${escHtml(p.description)}</div>
+      ${p.tags && p.tags.length ? `<div class="tag-list">${renderTags(p.tags)}</div>` : ''}
+      <div class="card-meta">
+        <div class="meta-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-label" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span class="meta-value" title="${escHtml(p.path)}">${escHtml(p.path)}</span>
+          <button class="copy-btn" title="复制路径" onclick="event.stopPropagation();copyText('${escHtml(p.path)}','路径已复制')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        ${p.runCommand ? `
+        <div class="cmd-block" onclick="event.stopPropagation()">
+          <span class="cmd-text">$ ${escHtml(p.runCommand)}</span>
+          <button class="copy-btn" title="复制命令" onclick="copyText('${escHtml(p.runCommand)}','命令已复制')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── Detail Modal ─────────────────────────────────────────────
+function openDetail(id) {
+  const p = store.projects.find(x => x.id === id);
+  if (!p) return;
+
+  document.getElementById('detailTitle').textContent = p.name;
+  document.getElementById('detailEditBtn').onclick = () => {
+    closeModal('detailBackdrop');
+    openEditModal(id);
+  };
+
+  let html = '';
+  html += `<div class="detail-section">
+    <div class="detail-label">功能描述</div>
+    <div class="detail-value">${escHtml(p.description).replace(/\n/g,'<br>')}</div>
+  </div>`;
+
+  if (p.tags && p.tags.length) {
+    html += `<div class="detail-section">
+      <div class="detail-label">技术标签</div>
+      <div class="detail-tags">${renderTags(p.tags)}</div>
+    </div>`;
+  }
+
+  html += `<div class="detail-section">
+    <div class="detail-label">存放路径</div>
+    <div class="detail-path">
+      <span>${escHtml(p.path)}</span>
+      <button class="copy-btn" onclick="copyText('${escHtml(p.path)}','路径已复制')" title="复制">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+  </div>`;
+
+  if (p.installCommand) {
+    html += `<div class="detail-section">
+      <div class="detail-label">安装依赖</div>
+      <div class="detail-code">
+        <span>$ ${escHtml(p.installCommand)}</span>
+        <button class="copy-btn" onclick="copyText('${escHtml(p.installCommand)}','命令已复制')" title="复制">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }
+
+  if (p.runCommand) {
+    html += `<div class="detail-section">
+      <div class="detail-label">运行命令</div>
+      <div class="detail-code">
+        <span>$ ${escHtml(p.runCommand)}</span>
+        <button class="copy-btn" onclick="copyText('${escHtml(p.runCommand)}','命令已复制')" title="复制">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }
+
+  if (p.notes) {
+    html += `<div class="detail-section">
+      <div class="detail-label">备注说明</div>
+      <div class="detail-value" style="color:var(--text-secondary)">${escHtml(p.notes).replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }
+
+  html += `<div class="detail-section" style="margin-bottom:0">
+    <div class="detail-label">添加时间</div>
+    <div class="detail-value" style="color:var(--text-secondary)">${p.createdAt || ''}</div>
+  </div>`;
+
+  document.getElementById('detailBody').innerHTML = html;
+  openModal('detailBackdrop');
+}
+
+// ─── Form Modal ───────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('formTitle').textContent = '新增项目';
+  document.getElementById('formId').value = '';
+  ['formName','formDesc','formPath','formTags','formInstall','formRun','formNotes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  openModal('formBackdrop');
+}
+
+function openEditModal(id) {
+  const p = store.projects.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('formTitle').textContent = '编辑项目';
+  document.getElementById('formId').value = p.id;
+  document.getElementById('formName').value = p.name;
+  document.getElementById('formDesc').value = p.description;
+  document.getElementById('formPath').value = p.path;
+  document.getElementById('formTags').value = (p.tags || []).join(', ');
+  document.getElementById('formInstall').value = p.installCommand || '';
+  document.getElementById('formRun').value = p.runCommand || '';
+  document.getElementById('formNotes').value = p.notes || '';
+  openModal('formBackdrop');
+}
+
+async function saveProject() {
+  const name = document.getElementById('formName').value.trim();
+  const desc = document.getElementById('formDesc').value.trim();
+  const path = document.getElementById('formPath').value.trim();
+  const run  = document.getElementById('formRun').value.trim();
+
+  if (!name || !desc || !path || !run) {
+    showToast('请填写带 * 的必填项', 'warning');
+    return;
+  }
+
+  const tagsRaw = document.getElementById('formTags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  const id = document.getElementById('formId').value;
+  let msg = '';
+
+  if (id) {
+    const idx = store.projects.findIndex(x => x.id === id);
+    if (idx >= 0) {
+      store.projects[idx] = { ...store.projects[idx], name, description: desc, path, tags,
+        installCommand: document.getElementById('formInstall').value.trim(),
+        runCommand: run,
+        notes: document.getElementById('formNotes').value.trim()
+      };
+      msg = `更新项目：${name}`;
+    }
+  } else {
+    store.projects.unshift({
+      id: genId(), name, description: desc, path, tags,
+      installCommand: document.getElementById('formInstall').value.trim(),
+      runCommand: run,
+      notes: document.getElementById('formNotes').value.trim(),
+      createdAt: new Date().toISOString().slice(0,10)
+    });
+    msg = `新增项目：${name}`;
+  }
+
+  closeModal('formBackdrop');
+  renderCards();
+
+  const ok = await pushToGitHub(msg);
+  showToast(ok ? (id ? '项目已更新并同步' : '项目已添加并同步') : (id ? '项目已更新（同步失败）' : '项目已添加（同步失败）'), ok ? 'success' : 'warning');
+}
+
+// ─── Delete ───────────────────────────────────────────────────
+function confirmDelete(id, name) {
+  document.getElementById('confirmDesc').textContent = `确定要删除「${name}」吗？此操作不可撤销。`;
+  document.getElementById('confirmOkBtn').onclick = async () => {
+    store.projects = store.projects.filter(x => x.id !== id);
+    closeModal('confirmBackdrop');
+    renderCards();
+    const ok = await pushToGitHub(`删除项目：${name}`);
+    showToast(ok ? '项目已删除并同步' : '项目已删除（同步失败）', ok ? 'success' : 'warning');
+  };
+  openModal('confirmBackdrop');
+}
+
+// ─── Token Modal ──────────────────────────────────────────────
+function openTokenModal() {
+  const cfg = getConfig();
+  document.getElementById('cfgOwner').value = cfg.owner || 'ljq117';
+  document.getElementById('cfgRepo').value = cfg.repo || 'GMcode';
+  document.getElementById('cfgBranch').value = cfg.branch || 'main';
+  document.getElementById('cfgToken').value = cfg.token || '';
+  openModal('tokenBackdrop');
+}
+
+function toggleTokenVis() {
+  const inp = document.getElementById('cfgToken');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function testAndSaveConfig() {
+  const owner = document.getElementById('cfgOwner').value.trim();
+  const repo  = document.getElementById('cfgRepo').value.trim();
+  const branch = document.getElementById('cfgBranch').value.trim() || 'main';
+  const token = document.getElementById('cfgToken').value.trim();
+
+  if (!owner || !repo || !token) {
+    showToast('请填写用户名、仓库名和 Token', 'warning');
+    return;
+  }
+
+  setSyncStatus('loading', '验证中...');
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error(`仓库不可访问（${res.status}）`);
+
+    setConfig({ owner, repo, branch, token });
+    closeModal('tokenBackdrop');
+    showToast('配置已保存，正在加载数据...', 'success');
+    await pullFromGitHub();
+  } catch (e) {
+    setSyncStatus('err', '验证失败');
+    showToast('验证失败：' + e.message, 'error');
+  }
+}
+
+// ─── Modal helpers ────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ─── Toast ────────────────────────────────────────────────────
+const TOAST_ICONS = {
+  success: '<polyline points="20 6 9 17 4 12"/>',
+  warning: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  error: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+};
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').innerHTML = TOAST_ICONS[type] || TOAST_ICONS.success;
+  toast.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ─── Copy ─────────────────────────────────────────────────────
+function copyText(text, msg = '已复制') {
+  navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast(msg);
+  });
+}
+
+// ─── Utils ────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function genId() {
+  return 'proj-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+// ─── Search ───────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  renderCards();
+});
+
+// ─── Keyboard shortcuts ───────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.open').forEach(el => el.classList.remove('open'));
+  }
+});
+
+// ─── Init ─────────────────────────────────────────────────────
+(async function init() {
+  const cfg = getConfig();
+  if (cfg.token && cfg.owner && cfg.repo) {
+    await pullFromGitHub();
+  } else {
+    // Show preset data from local cache or defaults
+    const cached = localStorage.getItem('projects_cache');
+    store.projects = cached ? JSON.parse(cached) : getPresetProjects();
+    renderCards();
+    setSyncStatus('err', '未配置');
+    // Prompt to configure
+    setTimeout(() => openTokenModal(), 800);
+  }
+})();
+</script>
+</body>
+</html>
