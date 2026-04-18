@@ -1,18 +1,5 @@
 [
   {
-    "id": "proj-1776506756205-o2kys",
-    "name": "测试",
-    "description": "测试",
-    "path": "测试",
-    "tags": [
-      "测试"
-    ],
-    "installCommand": "测试",
-    "runCommand": "测试",
-    "notes": "测试",
-    "createdAt": "2026-04-18"
-  },
-  {
     "id": "preset-hk-cardmanager",
     "name": "海康门禁卡管理系统",
     "description": "批量为员工在多台海康威视门禁打卡机（DS-K1T680MW）上绑定/下发门禁卡。支持按姓名搜索员工，并发查询所有设备，弹窗确认后一键批量绑定卡号。",
