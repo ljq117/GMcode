@@ -27,19 +27,5 @@
     "runCommand": "python3 menu.py",
     "notes": "首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login",
     "createdAt": "2026-04-18"
-  },
-  {
-    "id": "preset-testhello",
-    "name": "testhello",
-    "description": "一个简单的 Hello World 示例项目，演示 Python 函数定义与调用，打印问候语。",
-    "path": "/Users/one/ONEprojectcode/testhello",
-    "tags": [
-      "Python",
-      "Demo"
-    ],
-    "installCommand": "",
-    "runCommand": "python3 hello.py",
-    "notes": "输出示例：\nHello, World!\nHello, ONE!",
-    "createdAt": "2026-04-18"
   }
 ]
