@@ -29,20 +29,6 @@
     "createdAt": "2026-04-18"
   },
   {
-    "id": "preset-testhello",
-    "name": "testhello",
-    "description": "一个简单的 Hello World 示例项目，演示 Python 函数定义与调用，打印问候语。",
-    "path": "/Users/one/ONEprojectcode/testhello",
-    "tags": [
-      "Python",
-      "Demo"
-    ],
-    "installCommand": "",
-    "runCommand": "python3 hello.py",
-    "notes": "输出示例：\nHello, World!\nHello, ONE!",
-    "createdAt": "2026-04-18"
-  },
-  {
     "id": "preset-ces-gamehub",
     "name": "热门游戏预览页面",
     "description": "游戏主机风格的热门游戏展示单页应用，支持 PC/PS5/Xbox/Switch/手游多平台筛选、实时搜索、评分排行榜，纯静态无需服务器。",
