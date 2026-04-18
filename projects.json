@@ -27,21 +27,5 @@
     "runCommand": "python3 menu.py",
     "notes": "首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login",
     "createdAt": "2026-04-18"
-  },
-  {
-    "id": "preset-ces-gamehub",
-    "name": "热门游戏预览页面",
-    "description": "游戏主机风格的热门游戏展示单页应用，支持 PC/PS5/Xbox/Switch/手游多平台筛选、实时搜索、评分排行榜，纯静态无需服务器。",
-    "path": "/Users/one/ONEprojectcode/ces",
-    "tags": [
-      "HTML",
-      "CSS",
-      "JavaScript",
-      "Web"
-    ],
-    "installCommand": "",
-    "runCommand": "open index.html",
-    "notes": "直接打开 index.html 即可预览\n或用 python3 -m http.server 8080 启动本地服务访问 http://localhost:8080",
-    "createdAt": "2026-04-18"
   }
 ]
