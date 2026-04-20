@@ -1,5 +1,18 @@
 [
   {
+    "id": "proj-1776667140638-jo7dp",
+    "name": "腾讯会议管理系统",
+    "description": "腾讯会议管理系统",
+    "path": "腾讯会议管理系统",
+    "tags": [
+      "腾讯会议管理系统"
+    ],
+    "installCommand": "腾讯会议管理系统",
+    "runCommand": "腾讯会议管理系统",
+    "notes": "",
+    "createdAt": "2026-04-20"
+  },
+  {
     "id": "preset-hk-cardmanager",
     "name": "海康门禁卡管理系统",
     "description": "批量为员工在多台海康威视门禁打卡机（DS-K1T680MW）上绑定/下发门禁卡。支持按姓名搜索员工，并发查询所有设备，弹窗确认后一键批量绑定卡号。",
