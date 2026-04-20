@@ -1194,19 +1194,41 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ─── Pull from GitHub Raw (no token needed) ───────────────────
+async function pullFromGitHubRaw() {
+  const cfg = getConfig();
+  const owner = (cfg.owner || 'ljq117');
+  const repo  = (cfg.repo  || 'GMcode');
+  const branch = (cfg.branch || 'main');
+  const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/projects.json?t=${Date.now()}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Raw fetch ${res.status}`);
+  return res.json();
+}
+
 // ─── Init ─────────────────────────────────────────────────────
 (async function init() {
   const cfg = getConfig();
   if (cfg.token && cfg.owner && cfg.repo) {
     await pullFromGitHub();
   } else {
-    // Show preset data from local cache or defaults
-    const cached = localStorage.getItem('projects_cache');
-    store.projects = cached ? JSON.parse(cached) : getPresetProjects();
-    renderCards();
-    setSyncStatus('err', '未配置');
-    // Prompt to configure
-    setTimeout(() => openTokenModal(), 800);
+    // No token: try GitHub Raw public URL first
+    setSyncStatus('loading', '加载中...');
+    showLoading('正在加载数据...');
+    try {
+      store.projects = await pullFromGitHubRaw();
+      hideLoading();
+      setSyncStatus('ok', '只读模式');
+      renderCards();
+    } catch (e) {
+      // Fallback to local cache or preset
+      hideLoading();
+      const cached = localStorage.getItem('projects_cache');
+      store.projects = cached ? JSON.parse(cached) : getPresetProjects();
+      setSyncStatus('err', '未配置');
+      renderCards();
+      setTimeout(() => openTokenModal(), 800);
+    }
   }
 })();
 </script>
