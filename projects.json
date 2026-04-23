@@ -34,7 +34,7 @@
     "id": "preset-itsmgs",
     "name": "工时自动填报工具",
     "description": "自动登录 tspms 项目管理系统（IAM SSO 方式），填报每周工时。自动检测目标周，填报周一至周五各 7.5 小时，支持 Token 缓存复用、补填历史周、预填未来周，自动跳过已填日期。",
-    "path": "/Users/one/ONEprojectcode/itsmgs",
+    "path": "cd /Users/one/ONEprojectcode/itsmgs",
     "tags": [
       "Python",
       "CLI"
