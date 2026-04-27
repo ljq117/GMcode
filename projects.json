@@ -3,15 +3,15 @@
     "id": "proj-1776667140638-jo7dp",
     "name": "腾讯会议管理系统",
     "description": "基于腾讯会议开放平台 API 的多账号会议管理系统，支持查看会议列表、创建会议、数据总览，集成企业微信 OAuth2.0 免密登录与移动端响应式布局。",
-    "path": "cd /Users/one/ONEprojectcode/Meeting",
+    "path": "/Users/one/ONEprojectcode/Meeting",
     "tags": [
       "Vue3",
       "TypeScript",
       "Node.js",
       "Web"
     ],
-    "installCommand": "cd backend && npm install && cd ../frontend && npm install",
-    "runCommand": "cd backend && npm run dev",
+    "installCommand": "cd /Users/one/ONEprojectcode/Meeting && cd backend && npm install && cd ../frontend && npm install",
+    "runCommand": "cd /Users/one/ONEprojectcode/Meeting/backend && npm run dev",
     "notes": "后端：Node.js + Express + SQLite，默认端口 3000\n前端：Vue3 + Vite + TDesign，npm run dev 启动开发服务\n需配置腾讯会议 API Key 及企业微信 OAuth 相关环境变量",
     "createdAt": "2026-04-20"
   },
@@ -19,14 +19,14 @@
     "id": "preset-hk-cardmanager",
     "name": "海康门禁卡管理系统",
     "description": "批量为员工在多台海康威视门禁打卡机（DS-K1T680MW）上绑定/下发门禁卡。支持按姓名搜索员工，并发查询所有设备，弹窗确认后一键批量绑定卡号。",
-    "path": "cd /Users/one/ONEprojectcode/HK/CardManager",
+    "path": "/Users/one/ONEprojectcode/HK/CardManager",
     "tags": [
       "Python",
       "FastAPI",
       "Web"
     ],
-    "installCommand": "pip3 install fastapi uvicorn requests pydantic",
-    "runCommand": "python3 main.py",
+    "installCommand": "cd /Users/one/ONEprojectcode/HK/CardManager && pip3 install fastapi uvicorn requests pydantic",
+    "runCommand": "cd /Users/one/ONEprojectcode/HK/CardManager && python3 main.py",
     "notes": "启动后访问 http://localhost:8000\n需与打卡机在同一内网（10.11.71.81/82/83）\n如设备无法连接会在搜索结果中显示错误，不影响其他设备使用",
     "createdAt": "2026-04-18"
   },
@@ -34,13 +34,13 @@
     "id": "preset-itsmgs",
     "name": "工时自动填报工具",
     "description": "自动登录 tspms 项目管理系统（IAM SSO 方式），填报每周工时。自动检测目标周，填报周一至周五各 7.5 小时，支持 Token 缓存复用、补填历史周、预填未来周，自动跳过已填日期。",
-    "path": "cd /Users/one/ONEprojectcode/itsmgs",
+    "path": "/Users/one/ONEprojectcode/itsmgs",
     "tags": [
       "Python",
       "CLI"
     ],
-    "installCommand": "pip install -r requirements.txt",
-    "runCommand": "python3 menu.py",
+    "installCommand": "cd /Users/one/ONEprojectcode/itsmgs && pip install -r requirements.txt",
+    "runCommand": "cd /Users/one/ONEprojectcode/itsmgs && python3 menu.py",
     "notes": "首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login",
     "createdAt": "2026-04-18"
   },
@@ -55,8 +55,8 @@
       "海康ISAPI",
       "Automation"
     ],
-    "installCommand": "pip3 install openpyxl",
-    "runCommand": "python3 canteen_report.py",
+    "installCommand": "cd /Users/one/ONEprojectcode/DC && pip3 install openpyxl",
+    "runCommand": "cd /Users/one/ONEprojectcode/DC && python3 canteen_report.py",
     "notes": "默认设备：10.11.71.81/82/83；账号密码已写在 canteen_report.py 中，仅适合自用，不要对外共享。\n每月在下个月运行会自动导出上一个自然月数据，例如 5 月运行导出 4 月整月。\n餐次规则：早餐 07:30-09:30，午餐 11:30-13:30，晚餐 17:30-19:30；同一人同一天同一餐次只保留最早记录。\n可用 --start 和 --end 临时重跑指定月份。",
     "createdAt": "2026-04-27"
   }

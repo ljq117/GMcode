@@ -757,7 +757,7 @@ async function pullFromGitHub(silent = false) {
   try {
     const file = await ghGet(DATA_FILE);
     const text = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    store.projects = JSON.parse(text);
+    store.projects = normalizeProjects(JSON.parse(text));
     store.sha = file.sha;
     setSyncStatus('ok', '已同步');
     renderCards();
@@ -767,7 +767,7 @@ async function pullFromGitHub(silent = false) {
     hideLoading();
     if (e.message.includes('404')) {
       // File not found → push preset data
-      store.projects = getPresetProjects();
+      store.projects = normalizeProjects(getPresetProjects());
       store.sha = null;
       await pushToGitHub('初始化项目数据', silent);
     } else {
@@ -775,7 +775,7 @@ async function pullFromGitHub(silent = false) {
       if (!silent) showToast('加载失败：' + e.message, 'error');
       // fallback to local cache
       const cached = localStorage.getItem('projects_cache');
-      if (cached) store.projects = JSON.parse(cached);
+      if (cached) store.projects = normalizeProjects(JSON.parse(cached));
       renderCards();
     }
   }
@@ -789,11 +789,16 @@ async function pushToGitHub(commitMsg = '更新项目数据', silent = false) {
 
   setSyncStatus('loading', '保存中...');
   try {
-    // Always get latest sha before writing to avoid conflicts
+    // Refuse to overwrite a newer remote file; refresh first instead.
     try {
       const latest = await ghGet(DATA_FILE);
+      if (store.sha && latest.sha !== store.sha) {
+        throw new Error('远端数据已有更新，请先点击刷新后再保存');
+      }
       store.sha = latest.sha;
-    } catch (_) {}
+    } catch (e) {
+      if (e.message.includes('远端数据已有更新')) throw e;
+    }
 
     const result = await ghPut(DATA_FILE, store.projects, store.sha, commitMsg);
     store.sha = result.content.sha;
@@ -812,13 +817,24 @@ async function pushToGitHub(commitMsg = '更新项目数据', silent = false) {
 function getPresetProjects() {
   return [
     {
+      id: 'proj-1776667140638-jo7dp',
+      name: '腾讯会议管理系统',
+      description: '基于腾讯会议开放平台 API 的多账号会议管理系统，支持查看会议列表、创建会议、数据总览，集成企业微信 OAuth2.0 免密登录与移动端响应式布局。',
+      path: '/Users/one/ONEprojectcode/Meeting',
+      tags: ['Vue3', 'TypeScript', 'Node.js', 'Web'],
+      installCommand: 'cd /Users/one/ONEprojectcode/Meeting && cd backend && npm install && cd ../frontend && npm install',
+      runCommand: 'cd /Users/one/ONEprojectcode/Meeting/backend && npm run dev',
+      notes: '后端：Node.js + Express + SQLite，默认端口 3000\n前端：Vue3 + Vite + TDesign，npm run dev 启动开发服务\n需配置腾讯会议 API Key 及企业微信 OAuth 相关环境变量',
+      createdAt: '2026-04-20'
+    },
+    {
       id: 'preset-hk-cardmanager',
       name: '海康门禁卡管理系统',
       description: '批量为员工在多台海康威视门禁打卡机（DS-K1T680MW）上绑定/下发门禁卡。支持按姓名搜索员工，并发查询所有设备，弹窗确认后一键批量绑定卡号。',
       path: '/Users/one/ONEprojectcode/HK/CardManager',
       tags: ['Python', 'FastAPI', 'Web'],
-      installCommand: 'pip3 install fastapi uvicorn requests pydantic',
-      runCommand: 'python3 main.py',
+      installCommand: 'cd /Users/one/ONEprojectcode/HK/CardManager && pip3 install fastapi uvicorn requests pydantic',
+      runCommand: 'cd /Users/one/ONEprojectcode/HK/CardManager && python3 main.py',
       notes: '启动后访问 http://localhost:8000\n需与打卡机在同一内网（10.11.71.81/82/83）\n如设备无法连接会在搜索结果中显示错误，不影响其他设备使用',
       createdAt: '2026-04-18'
     },
@@ -828,10 +844,21 @@ function getPresetProjects() {
       description: '自动登录 tspms 项目管理系统（IAM SSO 方式），填报每周工时。自动检测目标周，填报周一至周五各 7.5 小时，支持 Token 缓存复用、补填历史周、预填未来周，自动跳过已填日期。',
       path: '/Users/one/ONEprojectcode/itsmgs',
       tags: ['Python', 'CLI'],
-      installCommand: 'pip install -r requirements.txt',
-      runCommand: 'python3 menu.py',
+      installCommand: 'cd /Users/one/ONEprojectcode/itsmgs && pip install -r requirements.txt',
+      runCommand: 'cd /Users/one/ONEprojectcode/itsmgs && python3 menu.py',
       notes: '首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login',
       createdAt: '2026-04-18'
+    },
+    {
+      id: 'proj-20260427-canteen-report',
+      name: '食堂订餐刷卡记录统计',
+      description: '从 3 台海康 DS-K1T680MW 人脸刷卡机导出上个月通行事件，合并为一张记录表，按早中晚餐时间段清理同人同天同餐多刷记录，并生成订餐统计 Excel。',
+      path: '/Users/one/ONEprojectcode/DC',
+      tags: ['Python', 'Excel', '海康ISAPI', 'Automation'],
+      installCommand: 'cd /Users/one/ONEprojectcode/DC && pip3 install openpyxl',
+      runCommand: 'cd /Users/one/ONEprojectcode/DC && python3 canteen_report.py',
+      notes: '默认设备：10.11.71.81/82/83；账号密码已写在 canteen_report.py 中，仅适合自用，不要对外共享。\n每月在下个月运行会自动导出上一个自然月数据，例如 5 月运行导出 4 月整月。\n餐次规则：早餐 07:30-09:30，午餐 11:30-13:30，晚餐 17:30-19:30；同一人同一天同一餐次只保留最早记录。\n可用 --start 和 --end 临时重跑指定月份。',
+      createdAt: '2026-04-27'
     }
   ];
 }
@@ -860,10 +887,10 @@ const TAG_CLASS_MAP = {
   'web': 'tag-web', 'cli': 'tag-cli', 'playwright': 'tag-playwright',
 };
 function getTagClass(tag) {
-  return TAG_CLASS_MAP[tag.toLowerCase()] || 'tag-default';
+  return TAG_CLASS_MAP[String(tag || '').toLowerCase()] || 'tag-default';
 }
 function renderTags(tags) {
-  return tags.map(t => `<span class="tag ${getTagClass(t)}">${t}</span>`).join('');
+  return tags.map(t => `<span class="tag ${getTagClass(t)}">${escHtml(t)}</span>`).join('');
 }
 
 // ─── Render Cards ─────────────────────────────────────────────
@@ -874,11 +901,7 @@ function renderCards() {
   const grid = document.getElementById('cardGrid');
   const query = currentSearch.trim().toLowerCase();
   const filtered = query
-    ? projects.filter(p =>
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
-      )
+    ? projects.filter(p => getSearchText(p).includes(query))
     : projects;
 
   document.getElementById('totalCount').textContent = projects.length;
@@ -904,14 +927,14 @@ function renderCards() {
   }
 
   grid.innerHTML = filtered.map(p => `
-    <div class="project-card" onclick="openDetail('${p.id}')">
+    <div class="project-card" onclick="openDetail(${jsArg(p.id)})">
       <div class="card-header">
         <div class="card-title">${escHtml(p.name)}</div>
         <div class="card-actions" onclick="event.stopPropagation()">
-          <button class="icon-btn" title="编辑" onclick="openEditModal('${p.id}')">
+          <button class="icon-btn" title="编辑" onclick="openEditModal(${jsArg(p.id)})">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="icon-btn delete" title="删除" onclick="confirmDelete('${p.id}','${escHtml(p.name)}')">
+          <button class="icon-btn delete" title="删除" onclick="confirmDelete(${jsArg(p.id)}, ${jsArg(p.name)})">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           </button>
         </div>
@@ -922,14 +945,14 @@ function renderCards() {
         <div class="meta-row">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-label" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           <span class="meta-value" title="${escHtml(p.path)}">${escHtml(p.path)}</span>
-          <button class="copy-btn" title="复制路径" onclick="event.stopPropagation();copyText('${escHtml(p.path)}','路径已复制')">
+          <button class="copy-btn" title="复制路径" onclick="event.stopPropagation();copyText(${jsArg(p.path)}, '路径已复制')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>
         ${p.runCommand ? `
         <div class="cmd-block" onclick="event.stopPropagation()">
           <span class="cmd-text">$ ${escHtml(p.runCommand)}</span>
-          <button class="copy-btn" title="复制命令" onclick="copyText('${escHtml(p.runCommand)}','命令已复制')">
+          <button class="copy-btn" title="复制命令" onclick="copyText(${jsArg(p.runCommand)}, '命令已复制')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>` : ''}
@@ -966,7 +989,7 @@ function openDetail(id) {
     <div class="detail-label">存放路径</div>
     <div class="detail-path">
       <span>${escHtml(p.path)}</span>
-      <button class="copy-btn" onclick="copyText('${escHtml(p.path)}','路径已复制')" title="复制">
+      <button class="copy-btn" onclick="copyText(${jsArg(p.path)}, '路径已复制')" title="复制">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </button>
     </div>
@@ -977,7 +1000,7 @@ function openDetail(id) {
       <div class="detail-label">安装依赖</div>
       <div class="detail-code">
         <span>$ ${escHtml(p.installCommand)}</span>
-        <button class="copy-btn" onclick="copyText('${escHtml(p.installCommand)}','命令已复制')" title="复制">
+        <button class="copy-btn" onclick="copyText(${jsArg(p.installCommand)}, '命令已复制')" title="复制">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
       </div>
@@ -989,7 +1012,7 @@ function openDetail(id) {
       <div class="detail-label">运行命令</div>
       <div class="detail-code">
         <span>$ ${escHtml(p.runCommand)}</span>
-        <button class="copy-btn" onclick="copyText('${escHtml(p.runCommand)}','命令已复制')" title="复制">
+        <button class="copy-btn" onclick="copyText(${jsArg(p.runCommand)}, '命令已复制')" title="复制">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
       </div>
@@ -1038,6 +1061,7 @@ function openEditModal(id) {
 }
 
 async function saveProject() {
+  const previousProjects = cloneProjects(store.projects);
   const name = document.getElementById('formName').value.trim();
   const desc = document.getElementById('formDesc').value.trim();
   const path = document.getElementById('formPath').value.trim();
@@ -1079,18 +1103,27 @@ async function saveProject() {
   renderCards();
 
   const ok = await pushToGitHub(msg);
-  showToast(ok ? (id ? '项目已更新并同步' : '项目已添加并同步') : (id ? '项目已更新（同步失败）' : '项目已添加（同步失败）'), ok ? 'success' : 'warning');
+  if (!ok) {
+    store.projects = previousProjects;
+    renderCards();
+  }
+  showToast(ok ? (id ? '项目已更新并同步' : '项目已添加并同步') : (id ? '同步失败，已回滚本地修改' : '同步失败，已回滚本地新增'), ok ? 'success' : 'warning');
 }
 
 // ─── Delete ───────────────────────────────────────────────────
 function confirmDelete(id, name) {
   document.getElementById('confirmDesc').textContent = `确定要删除「${name}」吗？此操作不可撤销。`;
   document.getElementById('confirmOkBtn').onclick = async () => {
+    const previousProjects = cloneProjects(store.projects);
     store.projects = store.projects.filter(x => x.id !== id);
     closeModal('confirmBackdrop');
     renderCards();
     const ok = await pushToGitHub(`删除项目：${name}`);
-    showToast(ok ? '项目已删除并同步' : '项目已删除（同步失败）', ok ? 'success' : 'warning');
+    if (!ok) {
+      store.projects = previousProjects;
+      renderCards();
+    }
+    showToast(ok ? '项目已删除并同步' : '同步失败，已恢复被删除项目', ok ? 'success' : 'warning');
   };
   openModal('confirmBackdrop');
 }
@@ -1177,6 +1210,42 @@ function escHtml(str) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function jsArg(value) {
+  return escHtml(JSON.stringify(String(value || '')));
+}
+function cloneProjects(projects) {
+  return JSON.parse(JSON.stringify(projects));
+}
+function normalizeProject(project) {
+  const p = project && typeof project === 'object' ? project : {};
+  return {
+    id: String(p.id || genId()),
+    name: String(p.name || ''),
+    description: String(p.description || ''),
+    path: String(p.path || ''),
+    tags: Array.isArray(p.tags) ? p.tags.map(t => String(t)).filter(Boolean) : [],
+    installCommand: String(p.installCommand || ''),
+    runCommand: String(p.runCommand || ''),
+    notes: String(p.notes || ''),
+    createdAt: String(p.createdAt || ''),
+  };
+}
+function normalizeProjects(projects) {
+  return (Array.isArray(projects) ? projects : [])
+    .map(normalizeProject)
+    .filter(p => p.id && p.name && p.path && p.runCommand);
+}
+function getSearchText(project) {
+  return [
+    project.name,
+    project.description,
+    project.path,
+    project.installCommand,
+    project.runCommand,
+    project.notes,
+    ...(project.tags || [])
+  ].join(' ').toLowerCase();
+}
 function genId() {
   return 'proj-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
 }
@@ -1216,7 +1285,7 @@ async function pullFromGitHubRaw() {
     setSyncStatus('loading', '加载中...');
     showLoading('正在加载数据...');
     try {
-      store.projects = await pullFromGitHubRaw();
+      store.projects = normalizeProjects(await pullFromGitHubRaw());
       hideLoading();
       setSyncStatus('ok', '只读模式');
       renderCards();
@@ -1224,7 +1293,7 @@ async function pullFromGitHubRaw() {
       // Fallback to local cache or preset
       hideLoading();
       const cached = localStorage.getItem('projects_cache');
-      store.projects = cached ? JSON.parse(cached) : getPresetProjects();
+      store.projects = cached ? normalizeProjects(JSON.parse(cached)) : normalizeProjects(getPresetProjects());
       setSyncStatus('err', '未配置');
       renderCards();
       setTimeout(() => openTokenModal(), 800);
