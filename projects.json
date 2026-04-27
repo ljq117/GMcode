@@ -43,5 +43,21 @@
     "runCommand": "python3 menu.py",
     "notes": "首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login",
     "createdAt": "2026-04-18"
+  },
+  {
+    "id": "proj-20260427-canteen-report",
+    "name": "食堂订餐刷卡记录统计",
+    "description": "从 3 台海康 DS-K1T680MW 人脸刷卡机导出上个月通行事件，合并为一张记录表，按早中晚餐时间段清理同人同天同餐多刷记录，并生成订餐统计 Excel。",
+    "path": "/Users/one/ONEprojectcode/DC",
+    "tags": [
+      "Python",
+      "Excel",
+      "海康ISAPI",
+      "Automation"
+    ],
+    "installCommand": "pip3 install openpyxl",
+    "runCommand": "python3 canteen_report.py",
+    "notes": "默认设备：10.11.71.81/82/83；账号密码已写在 canteen_report.py 中，仅适合自用，不要对外共享。\n每月在下个月运行会自动导出上一个自然月数据，例如 5 月运行导出 4 月整月。\n餐次规则：早餐 07:30-09:30，午餐 11:30-13:30，晚餐 17:30-19:30；同一人同一天同一餐次只保留最早记录。\n可用 --start 和 --end 临时重跑指定月份。",
+    "createdAt": "2026-04-27"
   }
 ]
