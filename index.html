@@ -945,7 +945,7 @@ function renderCards() {
         <div class="meta-row">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-label" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           <span class="meta-value" title="${escHtml(p.path)}">${escHtml(p.path)}</span>
-          <button class="copy-btn" title="复制路径" onclick="event.stopPropagation();copyText(${jsArg(p.path)}, '路径已复制')">
+          <button class="copy-btn" title="复制 cd 命令" onclick="event.stopPropagation();copyText(${jsArg(cdCommand(p.path))}, '切换目录命令已复制')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>
@@ -989,7 +989,7 @@ function openDetail(id) {
     <div class="detail-label">存放路径</div>
     <div class="detail-path">
       <span>${escHtml(p.path)}</span>
-      <button class="copy-btn" onclick="copyText(${jsArg(p.path)}, '路径已复制')" title="复制">
+      <button class="copy-btn" onclick="copyText(${jsArg(cdCommand(p.path))}, '切换目录命令已复制')" title="复制 cd 命令">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </button>
     </div>
@@ -1216,13 +1216,20 @@ function jsArg(value) {
 function cloneProjects(projects) {
   return JSON.parse(JSON.stringify(projects));
 }
+function cleanPathCommand(path) {
+  return String(path || '').trim().replace(/^cd\s+/, '').trim();
+}
+function cdCommand(path) {
+  const cleanPath = cleanPathCommand(path);
+  return cleanPath ? `cd ${cleanPath}` : '';
+}
 function normalizeProject(project) {
   const p = project && typeof project === 'object' ? project : {};
   return {
     id: String(p.id || genId()),
     name: String(p.name || ''),
     description: String(p.description || ''),
-    path: String(p.path || ''),
+    path: cleanPathCommand(p.path),
     tags: Array.isArray(p.tags) ? p.tags.map(t => String(t)).filter(Boolean) : [],
     installCommand: String(p.installCommand || ''),
     runCommand: String(p.runCommand || ''),
