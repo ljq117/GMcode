@@ -40,7 +40,7 @@
       "CLI"
     ],
     "installCommand": "cd /Users/one/ONEprojectcode/itsmgs && pip install -r requirements.txt",
-    "runCommand": "cd /Users/one/ONEprojectcode/itsmgs && python3 menu.py",
+    "runCommand": "cd /Users/one/ONEprojectcode/itsmgsv4 && python3 menu.py",
     "notes": "首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login",
     "createdAt": "2026-04-18"
   },
