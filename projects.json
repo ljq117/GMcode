@@ -2,7 +2,7 @@
   {
     "id": "proj-1776667140638-jo7dp",
     "name": "腾讯会议管理系统",
-    "description": "基于腾讯会议开放平台 API 的多账号会议管理系统，支持查看会议列表、创建会议、数据总览，集成企业微信 OAuth2.0 免密登录与移动端响应式布局。",
+    "description": "基于腾讯会议开放平台 API 的多账号会议管理系统，支持会议管理、数据总览和企业微信登录。",
     "path": "/Users/one/ONEprojectcode/Meeting",
     "tags": [
       "Vue3",
@@ -11,53 +11,286 @@
       "Web"
     ],
     "installCommand": "cd /Users/one/ONEprojectcode/Meeting && cd backend && npm install && cd ../frontend && npm install",
-    "runCommand": "cd /Users/one/ONEprojectcode/Meeting/backend && npm run dev",
-    "notes": "后端：Node.js + Express + SQLite，默认端口 3000\n前端：Vue3 + Vite + TDesign，npm run dev 启动开发服务\n需配置腾讯会议 API Key 及企业微信 OAuth 相关环境变量",
+    "runCommand": "cd /Users/one/ONEprojectcode/Meeting && cd backend && npm run dev",
+    "notes": "后端默认端口 3000；另开终端执行 cd /Users/one/ONEprojectcode/Meeting/frontend && npm run dev，前端默认端口 5173。需配置 API 及 OAuth 环境变量。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
     "createdAt": "2026-04-20"
   },
   {
     "id": "preset-hk-cardmanager",
     "name": "海康门禁卡管理系统",
-    "description": "批量为员工在多台海康威视门禁打卡机（DS-K1T680MW）上绑定/下发门禁卡。支持按姓名搜索员工，并发查询所有设备，弹窗确认后一键批量绑定卡号。",
+    "description": "并发查询多台海康门禁设备上的人员，确认人员及设备摘要后批量绑定卡号，展示逐台执行结果。",
     "path": "/Users/one/ONEprojectcode/HK/CardManager",
     "tags": [
       "Python",
       "FastAPI",
       "Web"
     ],
-    "installCommand": "cd /Users/one/ONEprojectcode/HK/CardManager && pip3 install fastapi uvicorn requests pydantic",
-    "runCommand": "cd /Users/one/ONEprojectcode/HK/CardManager && python3 main.py",
-    "notes": "启动后访问 http://localhost:8000\n需与打卡机在同一内网（10.11.71.81/82/83）\n如设备无法连接会在搜索结果中显示错误，不影响其他设备使用",
+    "installCommand": "cd /Users/one/ONEprojectcode/HK/CardManager && python3 -m venv venv && venv/bin/python -m pip install -r requirements.txt",
+    "runCommand": "cd /Users/one/ONEprojectcode/HK/CardManager && venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000",
+    "notes": "访问 http://127.0.0.1:8000；设备凭据从本地 .env 读取，需连接设备所在网络。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
     "createdAt": "2026-04-18"
   },
   {
     "id": "preset-itsmgs",
     "name": "工时自动填报工具",
-    "description": "自动登录 tspms 项目管理系统（IAM SSO 方式），填报每周工时。自动检测目标周，填报周一至周五各 7.5 小时，支持 Token 缓存复用、补填历史周、预填未来周，自动跳过已填日期。",
-    "path": "/Users/one/ONEprojectcode/itsmgs",
+    "description": "通过 IAM 登录 TSPMS，支持交互配置、按周工时填报及重复记录校验。",
+    "path": "/Users/one/ONEprojectcode/itsmgs_v4",
     "tags": [
       "Python",
-      "CLI"
+      "CLI",
+      "Automation"
     ],
-    "installCommand": "cd /Users/one/ONEprojectcode/itsmgs && pip install -r requirements.txt",
+    "installCommand": "cd /Users/one/ONEprojectcode/itsmgs_v4 && python3 -m pip install -r requirements.txt",
     "runCommand": "cd /Users/one/ONEprojectcode/itsmgs_v4 && python3 menu.py",
-    "notes": "首次运行会提示输入账号密码，自动保存至 ~/.itsmgs/config.ini\nToken 缓存在 ~/.itsmgs/token_cache.json，有效期 7 天\nToken 过期后运行：python3 timereport.py --force-login",
+    "notes": "原登记目录 itsmgs 已不存在，改为实际目录 itsmgs_v4。填报会写入业务系统，执行前核对目标周和配置。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
     "createdAt": "2026-04-18"
   },
   {
     "id": "proj-20260427-canteen-report",
-    "name": "食堂订餐刷卡记录统计",
-    "description": "从 3 台海康 DS-K1T680MW 人脸刷卡机导出上个月通行事件，合并为一张记录表，按早中晚餐时间段清理同人同天同餐多刷记录，并生成订餐统计 Excel。",
+    "name": "食堂订餐刷卡记录统计（DC）",
+    "description": "从三台海康设备导出通行事件，按餐次清理重复刷卡并生成订餐统计 Excel。",
     "path": "/Users/one/ONEprojectcode/DC",
+    "tags": [
+      "Python",
+      "Excel",
+      "海康ISAPI"
+    ],
+    "installCommand": "cd /Users/one/ONEprojectcode/DC && python3 -m pip install openpyxl",
+    "runCommand": "cd /Users/one/ONEprojectcode/DC && python3 canteen_report.py",
+    "notes": "保留原版入口；目录中另有 DCv2 版本。默认处理上一个自然月，可用 --start、--end 指定日期。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-04-27"
+  },
+  {
+    "id": "scan-20261013-dcv2",
+    "name": "食堂订餐刷卡记录统计（DCv2）",
+    "description": "食堂订餐统计第二版，导出三台海康设备记录、清理同餐多刷并生成 Excel，支持环境变量配置设备凭据。",
+    "path": "/Users/one/ONEprojectcode/DCv2",
     "tags": [
       "Python",
       "Excel",
       "海康ISAPI",
       "Automation"
     ],
-    "installCommand": "cd /Users/one/ONEprojectcode/DC && pip3 install openpyxl",
-    "runCommand": "cd /Users/one/ONEprojectcode/DC && python3 canteen_report.py",
-    "notes": "默认设备：10.11.71.81/82/83；账号密码已写在 canteen_report.py 中，仅适合自用，不要对外共享。\n每月在下个月运行会自动导出上一个自然月数据，例如 5 月运行导出 4 月整月。\n餐次规则：早餐 07:30-09:30，午餐 11:30-13:30，晚餐 17:30-19:30；同一人同一天同一餐次只保留最早记录。\n可用 --start 和 --end 临时重跑指定月份。",
-    "createdAt": "2026-04-27"
+    "runCommand": "cd /Users/one/ONEprojectcode/DCv2 && python3 canteen_report.py",
+    "installCommand": "cd /Users/one/ONEprojectcode/DCv2 && python3 -m pip install openpyxl",
+    "notes": "默认处理上一个自然月；凭据可通过 HIKVISION_USER / HIKVISION_PASSWORD 设置。详细统计参数参见本项目 README。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-gmcode",
+    "name": "GMcode · 我的项目导航台",
+    "description": "纯前端项目导航台，管理本地项目路径、命令、标签及备注，通过 GitHub 同步元信息。",
+    "path": "/Users/one/ONEprojectcode/GMcode",
+    "tags": [
+      "HTML",
+      "JavaScript",
+      "Web"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/GMcode && python3 -m http.server 8080 --bind 127.0.0.1",
+    "installCommand": "",
+    "notes": "访问 http://127.0.0.1:8080。页面默认加载 GitHub 远端 projects.json；本地数据更新需推送后才能在线显示。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-cwgx",
+    "name": "财务共享自动化工具",
+    "description": "FSSC 登录、会话缓存、系统探测与页面验证工具。",
+    "path": "/Users/one/ONEprojectcode/CWGX",
+    "tags": [
+      "Python",
+      "Playwright",
+      "CLI"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/CWGX && python3 -m fssc_automation.cli check",
+    "installCommand": "cd /Users/one/ONEprojectcode/CWGX && python3 -m pip install -r requirements.txt && python3 -m playwright install chromium",
+    "notes": "首次使用按 README 初始化配置。README 所述范围为登录和验证，不将单据创建或审批提交登记为已支持功能。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-hr",
+    "name": "统一用户平台人员信息批量修改工具",
+    "description": "读取人员 Excel，以 OA 账号和姓名核对用户，生成差异预览后按授权修改兼职机构、岗位及手机号。",
+    "path": "/Users/one/ONEprojectcode/HR",
+    "tags": [
+      "Python",
+      "FastAPI",
+      "Playwright",
+      "Web"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/HR && python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8765",
+    "installCommand": "cd /Users/one/ONEprojectcode/HR && python3 -m pip install -r requirements.txt && python3 -m playwright install chromium",
+    "notes": "访问 http://127.0.0.1:8765；执行前需勾选记录、核对差异并输入确认短语。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-it3",
+    "name": "业务系统管理平台",
+    "description": "集中管理业务系统、服务器、域名、证书及端口映射，提供统计看板与本地 SQLite 持久化。",
+    "path": "/Users/one/ONEprojectcode/IT3",
+    "tags": [
+      "Vue3",
+      "Node.js",
+      "SQLite",
+      "Web"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/IT3 && cd server && npm run dev",
+    "installCommand": "cd /Users/one/ONEprojectcode/IT3 && npm install && cd server && npm install",
+    "notes": "后端默认端口 5001；另开终端执行 cd /Users/one/ONEprojectcode/IT3 && npm run dev，前端默认端口 5173。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-ityw",
+    "name": "IT 运维周报月报生成脚本",
+    "description": "基于工单表和现有文档模板生成 IT 运维周报、月报，包含多个日期区间的脚本及输出。",
+    "path": "/Users/one/ONEprojectcode/ITYW",
+    "tags": [
+      "Python",
+      "Excel",
+      "Word",
+      "Automation"
+    ],
+    "runCommand": "",
+    "installCommand": "",
+    "notes": "未发现统一 README 或通用启动入口；运行命令留空。使用前核对脚本内的日期范围、模板路径和输出目录。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-itzc",
+    "name": "企业 IT 资产管理系统",
+    "description": "基于 Flask 管理电脑和软件资产、维修记录、统计分析及 Excel 导入导出。",
+    "path": "/Users/one/ONEprojectcode/ITZC",
+    "tags": [
+      "Python",
+      "Flask",
+      "SQLite",
+      "Web"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/ITZC && python3 run.py",
+    "installCommand": "cd /Users/one/ONEprojectcode/ITZC && python3 -m pip install -r requirements.txt",
+    "notes": "访问 http://localhost:5000；依赖版本以 requirements.txt 为准。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-jtvpnbh",
+    "name": "VPN／堡垒机权限台账管理系统",
+    "description": "本机单人权限台账，管理账号、服务器访问权限、生效及到期日期、续期提醒和申请单 Excel 导出。",
+    "path": "/Users/one/ONEprojectcode/JTVPNBH",
+    "tags": [
+      "Python",
+      "SQLite",
+      "Excel",
+      "Web"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/JTVPNBH && python3 server.py 8000",
+    "installCommand": "cd /Users/one/ONEprojectcode/JTVPNBH && python3 -m pip install openpyxl",
+    "notes": "访问 http://127.0.0.1:8000；与其他使用 8000 端口的项目同时运行时需调整端口。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-kq",
+    "name": "考勤记录管理",
+    "description": "纯前端考勤记录工具，维护人员和考勤记录并汇总出勤、请假及加班数据，使用浏览器本地存储。",
+    "path": "/Users/one/ONEprojectcode/KQ ",
+    "tags": [
+      "HTML",
+      "JavaScript",
+      "Web"
+    ],
+    "runCommand": "cd '/Users/one/ONEprojectcode/KQ ' && python3 -m http.server 8081 --bind 127.0.0.1",
+    "installCommand": "",
+    "notes": "访问 http://127.0.0.1:8081；实际目录名 KQ 末尾有一个空格，命令已加引号。数据保存在当前浏览器。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-autocheckin_koron",
+    "name": "自动考勤打卡脚本",
+    "description": "通过 IAM 获取考勤系统身份信息，按配置执行打卡，支持随机延迟与可选飞书通知。",
+    "path": "/Users/one/ONEprojectcode/autocheckin_koron",
+    "tags": [
+      "Python",
+      "CLI",
+      "Automation"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/autocheckin_koron && python3 main.py test",
+    "installCommand": "cd /Users/one/ONEprojectcode/autocheckin_koron && python3 -m pip install -r requirements.txt",
+    "notes": "默认登记 README 的 test 模式；实际打卡入口为 python3 main.py signin，会提交考勤记录。使用前核对本地配置。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-jf",
+    "name": "微信减肥记录小程序",
+    "description": "微信原生小程序，记录体重、饮食及运动，展示历史趋势、七日均重和目标进度。",
+    "path": "/Users/one/ONEprojectcode/jf",
+    "tags": [
+      "微信小程序",
+      "JavaScript",
+      "云开发"
+    ],
+    "runCommand": "",
+    "installCommand": "",
+    "notes": "使用微信开发者工具导入此目录，按 README 配置云开发环境并部署 cloudfunctions。无通用终端启动命令。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-jfhtml",
+    "name": "轻伴 · 体重记录网站",
+    "description": "中文桌面端体重记录网站，提供卡通伙伴、记录曲线与阶段对比。",
+    "path": "/Users/one/ONEprojectcode/jfhtml",
+    "tags": [
+      "React",
+      "TypeScript",
+      "Vite",
+      "Web"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/jfhtml && npm run dev -- --port 5173 --strictPort",
+    "installCommand": "cd /Users/one/ONEprojectcode/jfhtml && npm ci",
+    "notes": "需 Node.js 22.18+；固定访问 http://127.0.0.1:5173，浏览器数据按域名和端口隔离。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-qt-autobaomiguan",
+    "name": "保密观学习辅助工具",
+    "description": "保密观课程学习与考试辅助脚本，支持登录后选择课程。",
+    "path": "/Users/one/ONEprojectcode/qt/autobaomiguan",
+    "tags": [
+      "Python",
+      "CLI"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/qt/autobaomiguan && python3 main.py",
+    "installCommand": "cd /Users/one/ONEprojectcode/qt/autobaomiguan && python3 -m pip install -r requirements.txt",
+    "notes": "首次运行交互输入凭据；凭据文件保留在本地。课程配置与操作方式参见项目 README。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-shuipai",
+    "name": "水牌打印小工具",
+    "description": "Windows 会务桌面工具，从 Excel、Word 议程或手动输入获取信息，按模板预览和打印水牌。",
+    "path": "/Users/one/ONEprojectcode/shuipai",
+    "tags": [
+      "Python",
+      "PySide6",
+      "Windows",
+      "Word"
+    ],
+    "runCommand": "",
+    "installCommand": "",
+    "notes": "在 Windows 项目目录双击 run_windows.bat，自动创建环境、安装依赖并启动；build_windows.bat 用于打包。打印流程依赖 Windows 环境，未登记 macOS 启动命令。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
+  },
+  {
+    "id": "scan-20261013-zbrj",
+    "name": "Windows 商业软件授权排查系统",
+    "description": "Windows 终端软件资产盘点及授权核验平台，包含采集器、管理后台、规则核验与授权台账。",
+    "path": "/Users/one/ONEprojectcode/zbrj",
+    "tags": [
+      ".NET",
+      "React",
+      "TypeScript",
+      "SQLite"
+    ],
+    "runCommand": "cd /Users/one/ONEprojectcode/zbrj && dotnet run --project src/Compliance.Server --urls http://localhost:5080",
+    "installCommand": "cd /Users/one/ONEprojectcode/zbrj && cd src/Compliance.Web && npm ci && npm run build",
+    "notes": "需 .NET 8 SDK 和 Node.js；启动前按 README 设置 COMPLIANCE_ADMIN_PASSWORD。本地访问 http://localhost:5080；终端采集器及部署脚本面向 Windows。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
+    "createdAt": "2026-10-13"
   }
 ]
