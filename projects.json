@@ -215,21 +215,5 @@
     "runCommand": "cd /Users/one/ONEprojectcode/jfhtml && npm run dev -- --port 5173 --strictPort",
     "notes": "需 Node.js 22.18+；固定访问 http://127.0.0.1:5173，浏览器数据按域名和端口隔离。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
     "createdAt": "2026-10-13"
-  },
-  {
-    "id": "scan-20261013-zbrj",
-    "name": "Windows 商业软件授权排查系统",
-    "description": "Windows 终端软件资产盘点及授权核验平台，包含采集器、管理后台、规则核验与授权台账。",
-    "path": "/Users/one/ONEprojectcode/zbrj",
-    "tags": [
-      ".NET",
-      "React",
-      "TypeScript",
-      "SQLite"
-    ],
-    "installCommand": "cd /Users/one/ONEprojectcode/zbrj && cd src/Compliance.Web && npm ci && npm run build",
-    "runCommand": "cd /Users/one/ONEprojectcode/zbrj && dotnet run --project src/Compliance.Server --urls http://localhost:5080",
-    "notes": "需 .NET 8 SDK 和 Node.js；启动前按 README 设置 COMPLIANCE_ADMIN_PASSWORD。本地访问 http://localhost:5080；终端采集器及部署脚本面向 Windows。\n2026-10-13 根据本地文档和入口核对；未执行安装或业务操作。",
-    "createdAt": "2026-10-13"
   }
 ]
